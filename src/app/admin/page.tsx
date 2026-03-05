@@ -17,7 +17,12 @@ import {
   orderBy,
   serverTimestamp 
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { 
+  ref, 
+  uploadBytesResumable, 
+  getDownloadURL, 
+  deleteObject 
+} from "firebase/storage";
 import { LogOut, Trash2, Plus, Loader2 } from "lucide-react";
 import Image from "next/image";
 
@@ -36,6 +41,7 @@ export default function AdminPage() {
   const [length, setLength] = useState(LENGTHS[0]);
   const [avantApres, setAvantApres] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   
   const [haircuts, setHaircuts] = useState<Haircut[]>([]);
 
@@ -74,11 +80,35 @@ export default function AdminPage() {
   const handleAddHaircut = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || !user) return;
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert("L'image est trop volumineuse (max 10Mo).");
+      return;
+    }
+
     setSubmitting(true);
+    setUploadProgress(0);
     
     try {
       const storageRef = ref(storage, `haircuts/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      await new Promise<void>((resolve, reject) => {
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(Math.round(progress));
+          },
+          (error) => {
+            console.error("Upload error:", error);
+            reject(error);
+          },
+          () => resolve()
+        );
+      });
+
       const imageUrl = await getDownloadURL(storageRef);
       
       await addDoc(collection(db, "haircuts"), {
@@ -91,11 +121,13 @@ export default function AdminPage() {
       
       setFile(null);
       setAvantApres(false);
-    } catch (error) {
+      setUploadProgress(null);
+    } catch (error: any) {
       console.error(error);
-      alert("Erreur lors de l'ajout");
+      alert("Erreur lors de l'ajout: " + (error.message || "Inconnue"));
     }
     setSubmitting(false);
+    setUploadProgress(null);
   };
 
   const handleDelete = async (id: string, imageUrl: string) => {
@@ -204,10 +236,15 @@ export default function AdminPage() {
               <button 
                 type="submit" 
                 disabled={submitting}
-                className="w-full py-4 bg-kaki-deep text-off-white uppercase text-xs font-bold tracking-[0.2em] hover:bg-kaki-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-4 bg-kaki-deep text-off-white uppercase text-xs font-bold tracking-[0.2em] hover:bg-kaki-dark transition-all disabled:opacity-50 flex flex-col items-center justify-center gap-1"
               >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                Ajouter
+                <div className="flex items-center gap-2">
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {submitting ? "Envoi en cours..." : "Ajouter"}
+                </div>
+                {uploadProgress !== null && (
+                  <span className="text-[10px] opacity-60">{uploadProgress}%</span>
+                )}
               </button>
             </form>
           </div>
