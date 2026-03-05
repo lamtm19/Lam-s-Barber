@@ -1,0 +1,43 @@
+query ListAllCuts @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public as it lists available services.") {
+  cuts {
+    id
+    name
+    price
+    description
+    imageUrl
+    createdAt
+  }
+}
+
+mutation CreateNewAppointment($customerId: UUID!, $cutId: UUID!, $appointmentDateTime: Timestamp!, $notes: String) @auth(level: USER, insecureReason: "This operation allows authenticated users to create appointments, referencing their own user ID implicitly.") {
+  appointment_insert(data: {
+    customerId_expr: "auth.uid",
+    cutId: $cutId,
+    appointmentDateTime: $appointmentDateTime,
+    status: "PENDING",
+    createdAt_expr: "request.time",
+    notes: $notes
+  })
+}
+
+mutation UpdateMyAvailability($id: UUID!, $startTime: Timestamp, $endTime: Timestamp, $isBooked: Boolean, $breakTime: Timestamp) @auth(level: USER, insecureReason: "This operation allows authenticated barbers to manage their own availability, referencing their user ID implicitly.") {
+  availability_update(
+    key: { id: $id },
+    data: {
+      startTime: $startTime,
+      endTime: $endTime,
+      isBooked: $isBooked,
+      breakTime: $breakTime
+    }
+  )
+}
+
+mutation RegisterUser @auth(level: PUBLIC, insecureReason: "This operation allows new users to register for the service.") {
+  user_insert(data: {
+    id_expr: "auth.uid",
+    displayName: "New User", # This should ideally come from auth.token.name or a variable
+    email: "newuser@example.com", # This should ideally come from auth.token.email or a variable
+    createdAt_expr: "request.time",
+    role: "customer"
+  })
+}

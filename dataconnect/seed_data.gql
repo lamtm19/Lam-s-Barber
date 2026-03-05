@@ -1,0 +1,69 @@
+mutation CreateDemoData @transaction {
+  user_insertMany(data: [
+    {
+      id: "b455b76b-9c60-4b5c-8d1f-8c3e6d2a4e51",
+      displayName: "Barber John",
+      email: "john@example.com",
+      photoUrl: "https://example.com/john.jpg",
+      role: "barber",
+      createdAt: "2024-01-01T09:00:00Z"
+    },
+    {
+      id: "c788c00c-3d44-4e78-9a2b-1f8e5d9c2a74",
+      displayName: "Customer Jane",
+      email: "jane@example.com",
+      photoUrl: "https://example.com/jane.jpg",
+      role: "customer",
+      createdAt: "2024-01-01T09:15:00Z"
+    }
+  ])
+  cut_insertMany(data: [
+    {
+      id: "a1b2c3d4-e5f6-7890-1234-56789abcdef0",
+      name: "Classic Cut",
+      price: 25.00,
+      createdAt: "2024-01-01T10:00:00Z",
+      description: "A timeless, sharp haircut.",
+      imageUrl: "https://example.com/classic_cut.jpg"
+    },
+    {
+      id: "b5a4d3c2-e1f0-9876-5432-10fedcb98765",
+      name: "Buzz Cut",
+      price: 15.00,
+      createdAt: "2024-01-01T10:05:00Z",
+      description: "Short and low-maintenance.",
+      imageUrl: "https://example.com/buzz_cut.jpg"
+    }
+  ])
+  availability_insertMany(data: [
+    {
+      id: "d9e8f7a6-b5c4-3d2e-1f0a-9b8c7d6e5f4g",
+      barberId: "b455b76b-9c60-4b5c-8d1f-8c3e6d2a4e51",
+      startTime: "2024-07-15T10:00:00Z",
+      endTime: "2024-07-15T18:00:00Z",
+      date: "2024-07-15",
+      isBooked: false,
+      breakTime: "2024-07-15T13:00:00Z"
+    },
+    {
+      id: "e0f1g2h3-i4j5-6k7l-8m9n-0o1p2q3r4s5t",
+      barberId: "b455b76b-9c60-4b5c-8d1f-8c3e6d2a4e51",
+      startTime: "2024-07-16T09:00:00Z",
+      endTime: "2024-07-16T17:00:00Z",
+      date: "2024-07-16",
+      isBooked: false,
+      breakTime: null
+    }
+  ])
+  appointment_insertMany(data: [
+    {
+      id: "f0e1d2c3-b4a5-6789-0123-456789abcdef",
+      customerId: "c788c00c-3d44-4e78-9a2b-1f8e5d9c2a74",
+      cutId: "a1b2c3d4-e5f6-7890-1234-56789abcdef0",
+      appointmentDateTime: "2024-07-15T11:00:00Z",
+      status: "booked",
+      createdAt: "2024-07-14T15:00:00Z",
+      notes: "Customer prefers a slight fade."
+    }
+  ])
+}

@@ -1,0 +1,33 @@
+type User @table {
+  displayName: String!
+  createdAt: Timestamp!
+  email: String
+  photoUrl: String
+  role: String
+}
+
+type Cut @table {
+  name: String!
+  price: Float!
+  createdAt: Timestamp!
+  description: String
+  imageUrl: String
+}
+
+type Appointment @table {
+  customer: User!
+  cut: Cut!
+  appointmentDateTime: Timestamp!
+  status: String!
+  createdAt: Timestamp!
+  notes: String
+}
+
+type Availability @table {
+  barber: User!
+  startTime: Timestamp!
+  endTime: Timestamp!
+  date: Date!
+  isBooked: Boolean!
+  breakTime: Timestamp
+}
